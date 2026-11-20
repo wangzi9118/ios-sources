@@ -6,7 +6,7 @@
   "iconURL": "https://raw.githubusercontent.com/Kianuni/Erosion-CN/main/PreviewIcon.png",
   "website": "https://github.com/Kianuni/Erosion-CN",
   "tintColor": "#CF7D46",
-  "sourceURL": "https://raw.githubusercontent.com/<你的GitHub用户名>/<仓库名>/main/apps.json",
+  "sourceURL": "https://raw.githubusercontent.com/wangzi9118/ios-sources/main/apps.json",
   "featuredApps": [
     "com.jbdotparty.Erosion"
   ],
