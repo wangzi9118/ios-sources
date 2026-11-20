@@ -6,6 +6,9 @@
 
 默认从上游 raw 链接实时拉取；可用环境变量覆盖：
     DOUDUO_URL / EROSION_URL / SOURCE_URL（合并后源自身的 raw 链接）
+
+每个应用只保留最新版本：同 bundleIdentifier 取最高版本，
+并去掉 versions 历史数组（顶层字段本身就是最新版的信息）。
 """
 import json
 import os
@@ -38,17 +41,27 @@ def main():
     douduo = fetch(DOUDUO_URL)
     erosion = fetch(EROSION_URL)
 
-    # 按 (bundleIdentifier, version) 去重；同包名保留两边各自的版本条目
-    seen = set()
-    apps = []
+    # 只保留每个应用的最新版本：同 bundleIdentifier 取最高版本，
+    # 并去掉 versions 历史数组（顶层字段本身就是最新版的信息）
+    def version_key(v):
+        parts = []
+        for p in str(v or "").split("."):
+            parts.append(int(p) if p.isdigit() else 0)
+        return tuple(parts)
+
+    latest = {}
     for app in erosion.get("apps", []) + douduo.get("apps", []):
-        key = (app.get("bundleIdentifier"), app.get("version"))
-        if key in seen:
-            continue
-        seen.add(key)
+        bid = app.get("bundleIdentifier")
+        if bid not in latest or version_key(app.get("version")) > version_key(
+            latest[bid].get("version")
+        ):
+            latest[bid] = app
+    apps = []
+    for app in latest.values():
         # AltStore / SideStore 要求 size 为数字，DouDuo 源里是字符串，统一转 int
         if isinstance(app.get("size"), str) and app["size"].isdigit():
             app["size"] = int(app["size"])
+        app.pop("versions", None)
         apps.append(app)
 
     news = erosion.get("news", []) + douduo.get("news", [])
